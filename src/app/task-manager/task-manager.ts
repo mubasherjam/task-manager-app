@@ -129,11 +129,98 @@ export class TaskManager
     //Could add validation feedback here
   }
 
-  addTask() {
-    throw new Error('Method not implemented.');
+  addTask(): void
+  {
+    if (!this.newTask.title || !this.newTask.category || !this.newTask.dueDate)
+    {
+      return;
+    }
+
+    const task: Task = {
+      id: Date.now(),
+      title: this.newTask.title,
+      description: this.newTask.description,
+      category: this.newTask.category,
+      priority: this.newTask.priority,
+      dueDate: new Date(this.newTask.dueDate),
+      status: this.newTask.status,
+      createdAt: new Date()
+    };
+
+    this.tasks.push(task);
+    this.clearForm();
   }
 
-  clearForm() {
-    throw new Error('Method not implemented.');
+  clearForm(): void
+  {
+    this.newTask = {
+      title: '',
+      description: '',
+      category: '',
+      priority: 'medium',
+      dueDate: '',
+      status: 'pending'
+    };
+  }
+
+  getFilteredTasks(): Task[]
+  {
+    let filtered = [...this.tasks];
+
+    if (this.filterStatus !== 'all')
+    {
+      filtered = filtered.filter(task => task.status === this.filterStatus);
+    }
+
+    if (this.filterCategory !== 'all')
+    {
+      filtered = filtered.filter(task => task.category === this.filterCategory);
+    }
+
+    if (this.filterPriority !== 'all')
+    {
+      filtered = filtered.filter(task => task.priority === this.filterPriority);
+    }
+
+    if (!this.showCompleted)
+    {
+      filtered = filtered.filter(task => task.status !== 'completed');
+    }
+
+    return filtered;
+  }
+
+  toggleTaskComplete(id: number): void
+  {
+    const task = this.tasks.find(t => t.id === id);
+    if (task)
+    {
+      if (task.status === 'completed')
+      {
+        task.status = 'pending';
+        delete task.completedAt;
+      }
+      else
+      {
+        task.status = 'completed';
+        task.completedAt = new Date();
+      }
+    }
+  }
+
+  isOverdue(task: Task): boolean
+  {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return new Date(task.dueDate) < today && task.status != 'completed';
+  }
+
+  deleteTask(id: number): void
+  {
+    const index = this.tasks.findIndex(task => task.id === id);
+    if (index !== -1)
+    {
+      this.tasks.splice(index, 1);
+    }
   }
 }
