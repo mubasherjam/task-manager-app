@@ -86,7 +86,7 @@ export class TaskManager
   filterPriority: string = 'all';
   showCompleted: boolean = true;
 
-   //Methods
+  //Methods
   getCompletedTasksCount(): number
   {
     return this.tasks.filter(task => task.status === 'completed').length;
@@ -117,6 +117,23 @@ export class TaskManager
     if (rate >= 60) return 'good';
     if (rate >= 40) return 'needs-improvement';
     return 'poor';
-  };
-}
+  }
 
+  onFieldFocus(field: string): void
+  {
+    //Could add validation feedback here
+  }
+
+  onFieldBlur(field: string): void
+  {
+    //Could add validation feedback here
+  }
+
+  addTask() {
+    throw new Error('Method not implemented.');
+  }
+
+  clearForm() {
+    throw new Error('Method not implemented.');
+  }
+}
