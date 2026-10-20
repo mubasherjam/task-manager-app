@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TasksService } from '../services/tasks-service';
-
+import { FilterService } from '../services/filter-service';
 
 export interface Task
 {
@@ -26,7 +26,8 @@ export interface Task
 })
 export class TaskManager
 {
-  private tasksService = inject(TasksService);
+  private tasksService: TasksService = inject(TasksService);
+  private filterService: FilterService = inject(FilterService);
 
   getTasks(): Task[]
   {
@@ -54,12 +55,51 @@ export class TaskManager
     status: 'pending'
   };
 
-  //Filter controls
-  filterStatus: string = 'all';
-  filterCategory: string = 'all';
-  filterPriority: string = 'all';
-  showCompleted: boolean = true;
+  // getter and setter for filters
+  get filterStatus(): string
+  {
+    return this.filterService.getStatusFilter();
+  }
 
+  set filterStatus(value: string)
+  {
+    this.filterService.setStatusFilter(value);
+  }
+
+  get filterCategory(): string
+  {
+    return this.filterService.getCategoryFilter();
+  }
+
+  set filterCategory(value: string)
+  {
+    this.filterService.setCategoryFilter(value);
+  }
+
+  get filterPriority(): string
+  {
+    return this.filterService.getPriorityFilter();
+  }
+
+  set filterPriority(value: string)
+  {
+    this.filterService.setPriorityFilter(value);
+  }
+
+  get showCompleted(): boolean
+  {
+    return this.filterService.getShowCompleted();
+  }
+
+  set showCompleted(value: boolean)
+  {
+    this.filterService.setShowCompleted(value);
+  }
+
+  resetFilters(): void
+  {
+    this.filterService.resetFilters();
+  }
   //Methods
   getCompletedTasksCount(): number
   {
