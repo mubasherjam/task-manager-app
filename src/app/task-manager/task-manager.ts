@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TasksService } from '../services/tasks-service';
 import { FilterService } from '../services/filter-service';
+import { StatisticsService } from '../services/statistics-service';
 
 export interface Task
 {
@@ -28,6 +29,7 @@ export class TaskManager
 {
   private tasksService: TasksService = inject(TasksService);
   private filterService: FilterService = inject(FilterService);
+  private statisticsService: StatisticsService = inject(StatisticsService);
 
   getTasks(): Task[]
   {
@@ -100,38 +102,31 @@ export class TaskManager
   {
     this.filterService.resetFilters();
   }
+
   //Methods
   getCompletedTasksCount(): number
   {
-    return this.getTasks().filter(task => task.status === 'completed').length;
+    return this.statisticsService.getCompletedTasksCount();
   }
 
   getPendingTasksCount(): number
   {
-    return this.getTasks().filter(task => task.status === 'pending').length;
+    return this.statisticsService.getPendingTasksCount();
   }
 
   getOverdueTasksCount(): number
   {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return this.getTasks().filter(task => new Date(task.dueDate) < today && task.status != 'completed').length;
+    return this.statisticsService.getOverdueTasksCount();
   }
 
   getCompletionRate(): number
   {
-    const tasks = this.getTasks();
-    if (tasks.length == 0) return 0;
-    return Math.round((this.getCompletedTasksCount() / tasks.length) * 100);
+    return this.statisticsService.getCompletionRate();
   }
 
   getProductivityLevel(): string
   {
-    const rate = this.getCompletionRate();
-    if (rate >= 80) return 'excellent';
-    if (rate >= 60) return 'good';
-    if (rate >= 40) return 'needs-improvement';
-    return 'poor';
+    return this.statisticsService.getProductivityLevel();
   }
 
   onFieldFocus(field: string): void
