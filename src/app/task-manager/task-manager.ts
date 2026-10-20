@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TasksService } from '../services/tasks-service';
+
 
 export interface Task
 {
@@ -24,40 +26,12 @@ export interface Task
 })
 export class TaskManager
 {
-  //Core data
-  tasks: Task[] = [
-    {
-      id: 1,
-      title: 'Complete Angular Assignment',
-      description: 'Finish the task manager application with all requirements',
-      category: 'education',
-      priority: 'high',
-      dueDate: new Date('2024-12-15'),
-      status: 'in-progress',
-      createdAt: new Date('2024-12-01')
-    },
-    {
-      id: 2,
-      title: 'Buy Groceries',
-      description: 'Milk, Bread, Eggs, Vegetables',
-      category: 'shopping',
-      priority: 'medium',
-      dueDate: new Date('2024-12-10'),
-      status: 'pending',
-      createdAt: new Date('2024-12-05')
-    },
-    {
-      id: 3,
-      title: 'Team Meeting',
-      description: 'Discuss Q1 project roadmap',
-      category: 'work',
-      priority: 'high',
-      dueDate: new Date('2024-12-08'),
-      status: 'completed',
-      createdAt: new Date('2024-12-08')
-    }
-  ];
+  private tasksService = inject(TasksService);
 
+  getTasks(): Task[]
+  {
+    return this.tasksService.getTasks();
+  }
   //Dropdown Options
   categories: string[] = ['work', 'personal', 'shopping', 'health', 'finance', 'education', 'other'];
   priorities: string[] = ['low', 'medium', 'high', 'urgent'];
@@ -89,25 +63,26 @@ export class TaskManager
   //Methods
   getCompletedTasksCount(): number
   {
-    return this.tasks.filter(task => task.status === 'completed').length;
+    return this.getTasks().filter(task => task.status === 'completed').length;
   }
 
   getPendingTasksCount(): number
   {
-    return this.tasks.filter(task => task.status === 'pending').length;
+    return this.getTasks().filter(task => task.status === 'pending').length;
   }
 
   getOverdueTasksCount(): number
   {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return this.tasks.filter(task => new Date(task.dueDate) < today && task.status != 'completed').length;
+    return this.getTasks().filter(task => new Date(task.dueDate) < today && task.status != 'completed').length;
   }
 
   getCompletionRate(): number
   {
-    if (this.tasks.length == 0) return 0;
-    return Math.round((this.getCompletedTasksCount() / this.tasks.length) * 100);
+    const tasks = this.getTasks();
+    if (tasks.length == 0) return 0;
+    return Math.round((this.getCompletedTasksCount() / tasks.length) * 100);
   }
 
   getProductivityLevel(): string
@@ -147,7 +122,7 @@ export class TaskManager
       createdAt: new Date()
     };
 
-    this.tasks.push(task);
+    this.tasksService.addTask(task);
     this.clearForm();
   }
 
@@ -165,7 +140,7 @@ export class TaskManager
 
   getFilteredTasks(): Task[]
   {
-    let filtered = [...this.tasks];
+    let filtered = [...this.getTasks()];
 
     if (this.filterStatus !== 'all')
     {
@@ -192,20 +167,7 @@ export class TaskManager
 
   toggleTaskComplete(id: number): void
   {
-    const task = this.tasks.find(t => t.id === id);
-    if (task)
-    {
-      if (task.status === 'completed')
-      {
-        task.status = 'pending';
-        delete task.completedAt;
-      }
-      else
-      {
-        task.status = 'completed';
-        task.completedAt = new Date();
-      }
-    }
+    this.tasksService.toggleTaskComplete(id);
   }
 
   isOverdue(task: Task): boolean
@@ -217,10 +179,6 @@ export class TaskManager
 
   deleteTask(id: number): void
   {
-    const index = this.tasks.findIndex(task => task.id === id);
-    if (index !== -1)
-    {
-      this.tasks.splice(index, 1);
-    }
+    this.tasksService.deleteTask(id);
   }
 }
