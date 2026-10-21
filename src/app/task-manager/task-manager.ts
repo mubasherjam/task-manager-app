@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { TasksService } from '../services/tasks-service';
 import { FilterService } from '../services/filter-service';
 import { StatisticsService } from '../services/statistics-service';
+import { PriorityLabelPipe } from '../pipes/priority-label-pipe';
+import { StatusLabelPipe } from '../pipes/status-label-pipe';
 
 export interface Task
 {
@@ -21,20 +23,18 @@ export interface Task
 
 @Component({
   selector: 'app-task-manager',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PriorityLabelPipe, StatusLabelPipe],
   templateUrl: './task-manager.html',
   styleUrl: './task-manager.css',
 })
 export class TaskManager
 {
-  private tasksService: TasksService = inject(TasksService);
+  //Service
+  private tasksService : TasksService = inject(TasksService);
   private filterService: FilterService = inject(FilterService);
   private statisticsService: StatisticsService = inject(StatisticsService);
 
-  getTasks(): Task[]
-  {
-    return this.tasksService.getTasks();
-  }
+
   //Dropdown Options
   categories: string[] = ['work', 'personal', 'shopping', 'health', 'finance', 'education', 'other'];
   priorities: string[] = ['low', 'medium', 'high', 'urgent'];
@@ -57,10 +57,11 @@ export class TaskManager
     status: 'pending'
   };
 
-  // getter and setter for filters
+  
+  //Getter and setter properties for filters
   get filterStatus(): string
   {
-    return this.filterService.getStatusFilter();
+    return this.filterService.getStatusFilter(); 
   }
 
   set filterStatus(value: string)
@@ -98,12 +99,13 @@ export class TaskManager
     this.filterService.setShowCompleted(value);
   }
 
-  resetFilters(): void
-  {
-    this.filterService.resetFilters();
-  }
 
   //Methods
+  getTasks(): Task[]
+  {
+    return this.tasksService.getTasks();
+  }
+
   getCompletedTasksCount(): number
   {
     return this.statisticsService.getCompletedTasksCount();
