@@ -20,7 +20,6 @@ export interface Task
   completedAt?: Date;
 }
 
-
 @Component({
   selector: 'app-task-manager',
   imports: [CommonModule, FormsModule, PriorityLabelPipe, StatusLabelPipe],
@@ -33,7 +32,6 @@ export class TaskManager
   private tasksService : TasksService = inject(TasksService);
   private filterService: FilterService = inject(FilterService);
   private statisticsService: StatisticsService = inject(StatisticsService);
-
 
   //Dropdown Options
   categories: string[] = ['work', 'personal', 'shopping', 'health', 'finance', 'education', 'other'];
@@ -56,7 +54,6 @@ export class TaskManager
     dueDate: '',
     status: 'pending'
   };
-
   
   //Getter and setter properties for filters
   get filterStatus(): string
@@ -98,7 +95,6 @@ export class TaskManager
   {
     this.filterService.setShowCompleted(value);
   }
-
 
   //Methods
   getTasks(): Task[]
