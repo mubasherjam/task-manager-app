@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TasksService } from '../services/tasks-service';
@@ -6,6 +6,7 @@ import { FilterService } from '../services/filter-service';
 import { StatisticsService } from '../services/statistics-service';
 import { PriorityLabelPipe } from '../pipes/priority-label-pipe';
 import { StatusLabelPipe } from '../pipes/status-label-pipe';
+import { TasksApiService } from '../services/tasks-api-service';
 
 export interface Task
 {
@@ -32,6 +33,7 @@ export class TaskManager
   private tasksService : TasksService = inject(TasksService);
   private filterService: FilterService = inject(FilterService);
   private statisticsService: StatisticsService = inject(StatisticsService);
+  private tasksApiService: TasksApiService = inject(TasksApiService);
 
   //Dropdown Options
   categories: string[] = ['work', 'personal', 'shopping', 'health', 'finance', 'education', 'other'];
@@ -55,6 +57,15 @@ export class TaskManager
     status: 'pending'
   };
   
+  // ngoninit lifecycle hook to fetch tasks from the API when the component initializes
+  ngOnInit(): void
+  {
+    this.tasksApiService.getTasks().subscribe((tasks: Task[]) =>
+    {
+      console.log('Fetched tasks from API:', tasks);
+      tasks.forEach(task => this.tasksService.addTask(task));
+    });
+  }
   //Getter and setter properties for filters
   get filterStatus(): string
   {
