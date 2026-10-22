@@ -62,8 +62,7 @@ export class TaskManager
   {
     this.tasksApiService.getTasks().subscribe((tasks: Task[]) =>
     {
-      console.log('Fetched tasks from API:', tasks);
-      tasks.forEach(task => this.tasksService.addTask(task));
+      this.tasksService.setTasks(tasks);
     });
   }
   //Getter and setter properties for filters
