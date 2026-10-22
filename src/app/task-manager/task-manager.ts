@@ -18,8 +18,9 @@ export interface Task
   dueDate: Date;
   status: string;
   createdAt: Date;
-  completedAt?: Date;
+  completedAt?: Date | null;
 }
+
 
 @Component({
   selector: 'app-task-manager',
@@ -27,13 +28,14 @@ export interface Task
   templateUrl: './task-manager.html',
   styleUrl: './task-manager.css',
 })
-export class TaskManager
+export class TaskManager implements OnInit
 {
   //Service
   private tasksService : TasksService = inject(TasksService);
   private filterService: FilterService = inject(FilterService);
   private statisticsService: StatisticsService = inject(StatisticsService);
   private tasksApiService: TasksApiService = inject(TasksApiService);
+
 
   //Dropdown Options
   categories: string[] = ['work', 'personal', 'shopping', 'health', 'finance', 'education', 'other'];
@@ -56,15 +58,18 @@ export class TaskManager
     dueDate: '',
     status: 'pending'
   };
+
   
-  // ngoninit lifecycle hook to fetch tasks from the API when the component initializes
+  //ngOnInit
   ngOnInit(): void
   {
-    this.tasksApiService.getTasks().subscribe((tasks: Task[]) =>
-    {
-      this.tasksService.setTasks(tasks);
+    this.tasksApiService.getTasks()
+    .subscribe((response: Task[]) => {
+      //console.log(response);
+      this.tasksService.setTasks(response);
     });
   }
+
   //Getter and setter properties for filters
   get filterStatus(): string
   {
@@ -105,6 +110,7 @@ export class TaskManager
   {
     this.filterService.setShowCompleted(value);
   }
+
 
   //Methods
   getTasks(): Task[]
@@ -165,9 +171,14 @@ export class TaskManager
       createdAt: new Date()
     };
 
-    this.tasksService.addTask(task);
-    this.clearForm();
+    this.tasksApiService.createTask(task).subscribe(
+      (response: Task) => {
+        this.tasksService.addTask(response);
+        this.clearForm();
+      }
+    );
   }
+
 
   clearForm(): void
   {
@@ -210,7 +221,21 @@ export class TaskManager
 
   toggleTaskComplete(id: number): void
   {
-    this.tasksService.toggleTaskComplete(id);
+    this.tasksApiService.getTaskById(id).subscribe(
+      (response: Task) => {
+        const newStatus = response.status === 'completed'? 'pending' : 'completed';
+        const updatedData: Task = {
+          ...response,
+          status: newStatus,
+          completedAt: newStatus === 'completed'? new Date() : null
+        };
+
+        this.tasksApiService.updateTask(id, updatedData)
+        .subscribe((updatedTask: Task) => {
+          this.tasksService.toggleTaskComplete(updatedTask.id);
+        });
+      }
+    );
   }
 
   isOverdue(task: Task): boolean
@@ -222,6 +247,13 @@ export class TaskManager
 
   deleteTask(id: number): void
   {
-    this.tasksService.deleteTask(id);
+    if (confirm("Are you sure to delete?"))
+    {
+      this.tasksApiService.deleteTask(id).subscribe(
+        (response: any) => {
+          this.tasksService.deleteTask(id);
+        }
+    );
+    }
   }
 }
