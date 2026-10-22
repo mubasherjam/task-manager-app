@@ -582,3 +582,10 @@ textarea:focus {
   margin-top: 5px;
   color: #ef4444;
 }
+
+.loading-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+  font-size: 16px;
+}

@@ -59,14 +59,35 @@ export class TaskManager implements OnInit
     status: 'pending'
   };
 
-  
+  //Error and Loading Properties
+  errorMessage: string = '';
+  isLoadingTasks: boolean = false;
+  isAddingTask: boolean = false;
+  isUpdatingTask: boolean = false;
+  deletingTaskId: number | null = null;
+
+
   //ngOnInit
   ngOnInit(): void
   {
+    this.isLoadingTasks = true;
+
     this.tasksApiService.getTasks()
-    .subscribe((response: Task[]) => {
-      //console.log(response);
-      this.tasksService.setTasks(response);
+    .subscribe({
+      next: (response: Task[]) => {
+        //console.log(response);
+        this.tasksService.setTasks(response);
+        this.errorMessage = '';
+        this.isLoadingTasks = false;
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to load tasks. Please refresh the page.';
+        console.error('Error loading tasks: ', error);
+        this.isLoadingTasks = false;
+      },
+      complete: () => {
+        console.log('Fetch tasks completed');
+      }
     });
   }
 
@@ -171,11 +192,25 @@ export class TaskManager implements OnInit
       createdAt: new Date()
     };
 
-    this.tasksApiService.createTask(task).subscribe(
-      (response: Task) => {
+    this.isAddingTask = true;
+    this.errorMessage = '';
+
+    this.tasksApiService.createTask(task).subscribe({
+      next: (response: Task) => {
         this.tasksService.addTask(response);
         this.clearForm();
+        this.isAddingTask = false;
+        this.errorMessage = '';
+      },
+      error: (error) => {
+        console.error('Error adding task: ', error);
+        this.errorMessage = 'Failed to add task. Please try again.';
+        this.isAddingTask = false;
+      },
+      complete: () => {
+        console.log('Add task completed');
       }
+    }
     );
   }
 
@@ -221,7 +256,10 @@ export class TaskManager implements OnInit
 
   toggleTaskComplete(id: number): void
   {
-    this.tasksApiService.getTaskById(id).subscribe(
+    this.isUpdatingTask = true;
+
+    this.tasksApiService.getTaskById(id).subscribe({
+      next: 
       (response: Task) => {
         const newStatus = response.status === 'completed'? 'pending' : 'completed';
         const updatedData: Task = {
@@ -231,10 +269,28 @@ export class TaskManager implements OnInit
         };
 
         this.tasksApiService.updateTask(id, updatedData)
-        .subscribe((updatedTask: Task) => {
-          this.tasksService.toggleTaskComplete(updatedTask.id);
-        });
+        .subscribe({
+          next: (updatedTask: Task) => {
+            this.tasksService.toggleTaskComplete(updatedTask.id);
+            this.errorMessage = '';
+            this.isUpdatingTask = false;
+          },
+          error: (error) => {
+            this.errorMessage = 'Failed to update task. Please try again.';
+            console.error('Error updating task: ', error);
+            this.isUpdatingTask = false;
+          }
+      });
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to get task details. Please try again.';
+        console.error('Error getting task: ', error);
+        this.isUpdatingTask = false;
+      },
+      complete: () => {
+        console.log('Get task completed.');
       }
+    }
     );
   }
 
@@ -249,10 +305,23 @@ export class TaskManager implements OnInit
   {
     if (confirm("Are you sure to delete?"))
     {
-      this.tasksApiService.deleteTask(id).subscribe(
-        (response: any) => {
+      this.deletingTaskId = id;
+
+      this.tasksApiService.deleteTask(id).subscribe({
+        next: (response: any) => {
           this.tasksService.deleteTask(id);
+          this.errorMessage = '';
+          this.deletingTaskId = null;
+        },
+        error: (error) => {
+          console.error('Error deleting task: ', error);
+          this.errorMessage = 'Failed to delete task. Please try again.';
+          this.deletingTaskId = null;
+        },
+        complete: () => {
+          console.log('Delete task completed');
         }
+      }
     );
     }
   }
